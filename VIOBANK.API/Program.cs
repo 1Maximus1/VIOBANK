@@ -130,7 +130,7 @@ builder.Configuration
     .AddEnvironmentVariables();
 
 var redisConnection = builder.Configuration.GetConnectionString("Redis");
-Console.WriteLine(redisConnection);
+Console.WriteLine("Redis"+ " "+redisConnection+", "+ "encryptionSecretKey"+ " "+ encryptionSecretKey);
 var redis = ConnectionMultiplexer.Connect(redisConnection);
 builder.Services.AddSingleton<IConnectionMultiplexer>(redis);
 builder.Services.AddSingleton<JwtBlacklistService>();
