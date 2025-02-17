@@ -30,6 +30,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddLogging();
 
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("appsettings.Development.json", optional: true)
+    .AddEnvironmentVariables();
+
 builder.Configuration["ConnectionStrings:VIOBANKDbContext"] = Environment.GetEnvironmentVariable("VIOBANKDbContext");
 builder.Configuration["ConnectionStrings:Redis"] = Environment.GetEnvironmentVariable("Redis");
 builder.Configuration["JwtOptions:SecretKey"] = Environment.GetEnvironmentVariable("JwtSecretKey");
@@ -123,13 +129,9 @@ builder.Services.AddScoped<WithdrawnDepositService>();
 
 builder.Services.AddScoped<AesEncryptionService>();
 
-builder.Configuration
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile("appsettings.Development.json", optional: true)
-    .AddEnvironmentVariables();
+//var redisConnection = builder.Configuration.GetConnectionString("Redis");
+var redisConnection = builder.Configuration["ConnectionStrings:Redis"];
 
-var redisConnection = builder.Configuration.GetConnectionString("Redis");
 Console.WriteLine("Redis"+ " "+redisConnection+", "+ "encryptionSecretKey"+ " "+ encryptionSecretKey);
 var redis = ConnectionMultiplexer.Connect(redisConnection);
 builder.Services.AddSingleton<IConnectionMultiplexer>(redis);
