@@ -130,13 +130,14 @@ builder.Configuration
     .AddEnvironmentVariables();
 
 var redisConnection = builder.Configuration.GetConnectionString("Redis");
-
-//var redis = ConnectionMultiplexer.Connect(redisConnection);
-//builder.Services.AddSingleton<IConnectionMultiplexer>(redis);
-//builder.Services.AddSingleton<JwtBlacklistService>();
-var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
-builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
+Console.WriteLine(redisConnection);
+var redis = ConnectionMultiplexer.Connect(redisConnection);
+builder.Services.AddSingleton<IConnectionMultiplexer>(redis);
 builder.Services.AddSingleton<JwtBlacklistService>();
+
+//var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+//builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
+//builder.Services.AddSingleton<JwtBlacklistService>();
 
 
 builder.Services.AddApiAuthentication(builder.Configuration);
