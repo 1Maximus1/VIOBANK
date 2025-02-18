@@ -2,11 +2,11 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
+RUN dotnet tool install --global dotnet-ef
+ENV PATH="$PATH:/root/.dotnet/tools"
 
 COPY VIOBANK.API/appsettings.json /app/appsettings.json
 COPY VIOBANK.API/appsettings.Development.json /app/appsettings.Development.json
-
-
 #COPY ["VIOBANK.sln", "./"]
 #COPY ["VIOBANK.API/VIOBANK.API.csproj", "VIOBANK.API/"]
 #COPY ["VIOBANK.Application/VIOBANK.Application.csproj", "VIOBANK.Application/"]
