@@ -144,8 +144,13 @@ builder.Services.AddSingleton<JwtBlacklistService>();
 
 builder.Services.AddApiAuthentication(builder.Configuration);
 
-
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<VIOBANKDbContext>();
+    dbContext.Database.Migrate();
+}
 
 app.UseMiddleware<JwtBlacklistMiddleware>();
 
@@ -161,6 +166,8 @@ app.UseCookiePolicy(new CookiePolicyOptions
     HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always,
     Secure = CookieSecurePolicy.Always
 });
+
+
 
 app.MapControllers();
 
