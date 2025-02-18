@@ -37,31 +37,6 @@ namespace VIOBANK.PostgresPersistence.Migrations
                 table: "Contacts",
                 column: "ContactCard",
                 unique: true);
-
-            migrationBuilder.Sql(@"
-                CREATE OR REPLACE FUNCTION update_account_balance()
-                RETURNS TRIGGER AS $$
-                BEGIN
-                    -- Обновляем баланс аккаунта на сумму всех его карт
-                    UPDATE ""Accounts""
-                    SET ""Balance"" = (
-                        SELECT COALESCE(SUM(""Balance""), 0) 
-                        FROM ""Cards""
-                        WHERE ""AccountId"" = NEW.""AccountId""
-                    )
-                    WHERE ""AccountId"" = NEW.""AccountId"";
-
-                    RETURN NEW;
-                END;
-                $$ LANGUAGE plpgsql;
-            ");
-
-            migrationBuilder.Sql(@"
-                CREATE TRIGGER trigger_update_account_balance
-                AFTER INSERT OR UPDATE ON ""Cards""
-                FOR EACH ROW
-                EXECUTE FUNCTION update_account_balance();
-            ");
         }
 
         /// <inheritdoc />
@@ -88,9 +63,6 @@ namespace VIOBANK.PostgresPersistence.Migrations
                 oldClrType: typeof(string),
                 oldType: "character varying(50)",
                 oldMaxLength: 50);
-
-            migrationBuilder.Sql(@"DROP TRIGGER IF EXISTS trigger_update_account_balance ON ""Cards"";");
-            migrationBuilder.Sql(@"DROP FUNCTION IF EXISTS update_account_balance;");
         }
     }
 }
