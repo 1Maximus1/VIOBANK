@@ -133,13 +133,13 @@ builder.Services.AddScoped<AesEncryptionService>();
 var redisConnection = builder.Configuration["ConnectionStrings:Redis"];
 
 Console.WriteLine("Redis"+ " "+redisConnection+", "+ "encryptionSecretKey"+ " "+ encryptionSecretKey);
-var redis = ConnectionMultiplexer.Connect(redisConnection);
-builder.Services.AddSingleton<IConnectionMultiplexer>(redis);
-builder.Services.AddSingleton<JwtBlacklistService>();
-
-//var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
-//builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
+//var redis = ConnectionMultiplexer.Connect(redisConnection);
+//builder.Services.AddSingleton<IConnectionMultiplexer>(redis);
 //builder.Services.AddSingleton<JwtBlacklistService>();
+
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
+builder.Services.AddSingleton<JwtBlacklistService>();
 
 
 builder.Services.AddApiAuthentication(builder.Configuration);
