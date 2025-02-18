@@ -36,13 +36,13 @@ builder.Configuration
     .AddJsonFile("appsettings.Development.json", optional: true)
     .AddEnvironmentVariables();
 
-//builder.Configuration["ConnectionStrings:VIOBANKDbContext"] = Environment.GetEnvironmentVariable("VIOBANKDbContext");
-//builder.Configuration["ConnectionStrings:Redis"] = Environment.GetEnvironmentVariable("Redis");
-//builder.Configuration["JwtOptions:SecretKey"] = Environment.GetEnvironmentVariable("JwtSecretKey");
-//builder.Configuration["ExchangeRateApi:ApiKey"] = Environment.GetEnvironmentVariable("ExchangeRateApiKey");
-//builder.Configuration["Twilio:AccountSid"] = Environment.GetEnvironmentVariable("TwilioAccountSid");
-//builder.Configuration["Twilio:AuthToken"] = Environment.GetEnvironmentVariable("TwilioAuthToken");
-//builder.Configuration["Encryption:SecretKey"] = Environment.GetEnvironmentVariable("EncryptionSecretKey");
+builder.Configuration["ConnectionStrings:VIOBANKDbContext"] = Environment.GetEnvironmentVariable("VIOBANKDbContext");
+builder.Configuration["ConnectionStrings:Redis"] = Environment.GetEnvironmentVariable("Redis");
+builder.Configuration["JwtOptions:SecretKey"] = Environment.GetEnvironmentVariable("JwtSecretKey");
+builder.Configuration["ExchangeRateApi:ApiKey"] = Environment.GetEnvironmentVariable("ExchangeRateApiKey");
+builder.Configuration["Twilio:AccountSid"] = Environment.GetEnvironmentVariable("TwilioAccountSid");
+builder.Configuration["Twilio:AuthToken"] = Environment.GetEnvironmentVariable("TwilioAuthToken");
+builder.Configuration["Encryption:SecretKey"] = Environment.GetEnvironmentVariable("EncryptionSecretKey");
 
 var connectionString = builder.Configuration.GetConnectionString("VIOBANKDbContext");
 builder.Services.AddDbContext<VIOBANKDbContext>(options =>
@@ -50,13 +50,13 @@ builder.Services.AddDbContext<VIOBANKDbContext>(options =>
 
 
 // Connect API currency exchange
-//var exchangeRateApiUrl = builder.Configuration["ExchangeRateApi:BaseUrl"];
-//var exchangeRateApiKey = builder.Configuration["ExchangeRateApi:ApiKey"];
+var exchangeRateApiUrl = builder.Configuration["ExchangeRateApi:BaseUrl"];
+var exchangeRateApiKey = builder.Configuration["ExchangeRateApi:ApiKey"];
 
 //// Connect Twilio
-//var twilioAccountSid = builder.Configuration["Twilio:AccountSid"];
-//var twilioAuthToken = builder.Configuration["Twilio:AuthToken"];
-//var twilioPhoneNumber = builder.Configuration["Twilio:PhoneNumber"];
+var twilioAccountSid = builder.Configuration["Twilio:AccountSid"];
+var twilioAuthToken = builder.Configuration["Twilio:AuthToken"];
+var twilioPhoneNumber = builder.Configuration["Twilio:PhoneNumber"];
 
 //// Connect encryption
 //var encryptionSecretKey = builder.Configuration["Encryption:SecretKey"];
