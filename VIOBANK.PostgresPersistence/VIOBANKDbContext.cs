@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using VIOBANK.Domain.Models;
 using VIOBANK.PostgresPersistence.Configurations;
+using VIOBANK.PostgresPersistence.Entities;
 
 namespace VIOBANK.PostgresPersistence
 {
@@ -22,6 +23,7 @@ namespace VIOBANK.PostgresPersistence
         public DbSet<Settings> Settings { get; set; }
         public DbSet<DepositTransaction> DepositTransactions { get; set; }
         public DbSet<WithdrawnDeposit> WithdrawnDeposits { get; set; }
+        public DbSet<BlacklistedToken> BlacklistedTokens { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new AccountConfiguration());
@@ -34,6 +36,7 @@ namespace VIOBANK.PostgresPersistence
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new DepositTransactionConfiguration());
             modelBuilder.ApplyConfiguration(new WithdrawnDepositConfiguration());
+            modelBuilder.ApplyConfiguration(new BlacklistedTokenConfiguration());
 
             base.OnModelCreating(modelBuilder);
         }

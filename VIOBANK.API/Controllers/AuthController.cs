@@ -8,7 +8,8 @@ using VIOBANK.API.Contracts.Card;
 using VIOBANK.API.Validation;
 using VIOBANK.Application.Services;
 using VIOBANK.Domain.Models;
-using VIOBANK.RedisPersistence.Services;
+using VIOBANK.PostgresPersistence.Repositories;
+//using VIOBANK.RedisPersistence.Services;
 
 namespace VIOBANK.Controllers
 {

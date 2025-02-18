@@ -2,10 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using VIOBANK.Application.Services;
 using VIOBANK.Infrastructure;
-using VIOBANK.RedisPersistence.Services;
+//using VIOBANK.RedisPersistence.Services;
 using VIOBANK.API.Contracts.Account;
 using FluentValidation;
 using VIOBANK.API.Contracts.Card;
+using VIOBANK.PostgresPersistence.Repositories;
 namespace VIOBANK.Controllers
 {
     [Authorize]

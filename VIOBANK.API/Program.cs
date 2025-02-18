@@ -8,8 +8,8 @@ using FluentValidation;
 using VIOBANK.Infrastructure;
 using VIOBANK.API.Extensions;
 using VIOBANK.API.Contracts.User;
-using StackExchange.Redis;
-using VIOBANK.RedisPersistence.Services;
+//using StackExchange.Redis;
+//using VIOBANK.RedisPersistence.Services;
 using VIOBANK.API.Middleware;
 using VIOBANK.API.Validation;
 using VIOBANK.API.Contracts.Transaction;
@@ -19,7 +19,7 @@ using VIOBANK.API.Contracts.Contact;
 using VIOBANK.API.Contracts.Card;
 using VIOBANK.API.Contracts.Auth;
 using VIOBANK.API.Validation.Auth;
-using FluentValidation.AspNetCore;
+//using FluentValidation.AspNetCore;
 using VIOBANK.API.Contracts.Account;
 using VIOBANK.API.Validation.Account;
 
@@ -36,13 +36,13 @@ builder.Configuration
     .AddJsonFile("appsettings.Development.json", optional: true)
     .AddEnvironmentVariables();
 
-builder.Configuration["ConnectionStrings:VIOBANKDbContext"] = Environment.GetEnvironmentVariable("VIOBANKDbContext");
-builder.Configuration["ConnectionStrings:Redis"] = Environment.GetEnvironmentVariable("Redis");
-builder.Configuration["JwtOptions:SecretKey"] = Environment.GetEnvironmentVariable("JwtSecretKey");
-builder.Configuration["ExchangeRateApi:ApiKey"] = Environment.GetEnvironmentVariable("ExchangeRateApiKey");
-builder.Configuration["Twilio:AccountSid"] = Environment.GetEnvironmentVariable("TwilioAccountSid");
-builder.Configuration["Twilio:AuthToken"] = Environment.GetEnvironmentVariable("TwilioAuthToken");
-builder.Configuration["Encryption:SecretKey"] = Environment.GetEnvironmentVariable("EncryptionSecretKey");
+//builder.Configuration["ConnectionStrings:VIOBANKDbContext"] = Environment.GetEnvironmentVariable("VIOBANKDbContext");
+//builder.Configuration["ConnectionStrings:Redis"] = Environment.GetEnvironmentVariable("Redis");
+//builder.Configuration["JwtOptions:SecretKey"] = Environment.GetEnvironmentVariable("JwtSecretKey");
+//builder.Configuration["ExchangeRateApi:ApiKey"] = Environment.GetEnvironmentVariable("ExchangeRateApiKey");
+//builder.Configuration["Twilio:AccountSid"] = Environment.GetEnvironmentVariable("TwilioAccountSid");
+//builder.Configuration["Twilio:AuthToken"] = Environment.GetEnvironmentVariable("TwilioAuthToken");
+//builder.Configuration["Encryption:SecretKey"] = Environment.GetEnvironmentVariable("EncryptionSecretKey");
 
 var connectionString = builder.Configuration.GetConnectionString("VIOBANKDbContext");
 builder.Services.AddDbContext<VIOBANKDbContext>(options =>
@@ -50,16 +50,16 @@ builder.Services.AddDbContext<VIOBANKDbContext>(options =>
 
 
 // Connect API currency exchange
-var exchangeRateApiUrl = builder.Configuration["ExchangeRateApi:BaseUrl"];
-var exchangeRateApiKey = builder.Configuration["ExchangeRateApi:ApiKey"];
+//var exchangeRateApiUrl = builder.Configuration["ExchangeRateApi:BaseUrl"];
+//var exchangeRateApiKey = builder.Configuration["ExchangeRateApi:ApiKey"];
 
-// Connect Twilio
-var twilioAccountSid = builder.Configuration["Twilio:AccountSid"];
-var twilioAuthToken = builder.Configuration["Twilio:AuthToken"];
-var twilioPhoneNumber = builder.Configuration["Twilio:PhoneNumber"];
+//// Connect Twilio
+//var twilioAccountSid = builder.Configuration["Twilio:AccountSid"];
+//var twilioAuthToken = builder.Configuration["Twilio:AuthToken"];
+//var twilioPhoneNumber = builder.Configuration["Twilio:PhoneNumber"];
 
-// Connect encryption
-var encryptionSecretKey = builder.Configuration["Encryption:SecretKey"];
+//// Connect encryption
+//var encryptionSecretKey = builder.Configuration["Encryption:SecretKey"];
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
 
@@ -129,17 +129,23 @@ builder.Services.AddScoped<WithdrawnDepositService>();
 
 builder.Services.AddScoped<AesEncryptionService>();
 
-//var redisConnection = builder.Configuration.GetConnectionString("Redis");
-var redisConnection = builder.Configuration["ConnectionStrings:Redis"];
 
-Console.WriteLine("Redis"+ " "+redisConnection+", "+ "encryptionSecretKey"+ " "+ encryptionSecretKey);
+builder.Services.AddScoped<IBlacklistedTokenRepository, BlacklistedTokenRepository>();
+builder.Services.AddScoped<JwtBlacklistService>();
+
+
+
+//var redisConnection = builder.Configuration.GetConnectionString("Redis");
+//var redisConnection = builder.Configuration["ConnectionStrings:Redis"];
+
+//Console.WriteLine("Redis"+ " "+redisConnection);
 //var redis = ConnectionMultiplexer.Connect(redisConnection);
 //builder.Services.AddSingleton<IConnectionMultiplexer>(redis);
 //builder.Services.AddSingleton<JwtBlacklistService>();
 
-var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
-builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
-builder.Services.AddSingleton<JwtBlacklistService>();
+//var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+//builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
+//builder.Services.AddSingleton<JwtBlacklistServiceRedis>();
 
 
 builder.Services.AddApiAuthentication(builder.Configuration);

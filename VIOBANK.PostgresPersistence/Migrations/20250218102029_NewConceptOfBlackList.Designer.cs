@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using VIOBANK.PostgresPersistence;
@@ -11,9 +12,11 @@ using VIOBANK.PostgresPersistence;
 namespace VIOBANK.PostgresPersistence.Migrations
 {
     [DbContext(typeof(VIOBANKDbContext))]
-    partial class VIOBANKDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250218102029_NewConceptOfBlackList")]
+    partial class NewConceptOfBlackList
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
