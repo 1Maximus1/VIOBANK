@@ -147,6 +147,20 @@ builder.Services.AddScoped<JwtBlacklistService>();
 //builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
 //builder.Services.AddSingleton<JwtBlacklistServiceRedis>();
 
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials(); 
+        });
+});
+
 
 builder.Services.AddApiAuthentication(builder.Configuration);
 
@@ -159,6 +173,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseMiddleware<JwtBlacklistMiddleware>();
+
 
 if (app.Environment.IsDevelopment())
 {
@@ -177,6 +192,7 @@ app.UseCookiePolicy(new CookiePolicyOptions
 
 app.MapControllers();
 
+app.UseCors(MyAllowSpecificOrigins);
 app.UseAuthentication();
 app.UseAuthorization();
 
