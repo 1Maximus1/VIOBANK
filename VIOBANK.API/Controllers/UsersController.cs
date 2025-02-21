@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Npgsql.BackendMessages;
 using VIOBANK.API.Contracts.User;
 using VIOBANK.Application.Services;
 using VIOBANK.Domain.Models;
@@ -18,14 +19,17 @@ namespace VIOBANK.Controllers
         private readonly IValidator<UserProfileDTO> _userValidator;
         private readonly IValidator<int> _userIdValidator;
         private readonly IJwtProvider _jwtProvider;
+        private readonly CloudinaryService _cloudinaryService;
 
-        public UsersController(ILogger<UsersController> logger, UserService userService, IValidator<UserProfileDTO> userValidator, IJwtProvider jwtProvider, IValidator<int> userIdValidator)
+
+        public UsersController(CloudinaryService cloudinaryService, ILogger<UsersController> logger, UserService userService, IValidator<UserProfileDTO> userValidator, IJwtProvider jwtProvider, IValidator<int> userIdValidator)
         {
             _logger = logger;
             _userService = userService;
             _userValidator = userValidator;
             _jwtProvider = jwtProvider;
             _userIdValidator = userIdValidator;
+            _cloudinaryService = cloudinaryService;
         }
 
         [HttpGet]
@@ -139,35 +143,70 @@ namespace VIOBANK.Controllers
             }
         }
 
-        //[HttpPost("upload-photo")]
-        //public async Task<IActionResult> UploadProfilePhoto([FromForm] IFormFile photo)
-        //{
-        //    try
-        //    {
-        //        _logger.LogInformation("Uploading a profile photo");
-        //        var userId = Guid.NewGuid(); // ID из токена
+        [HttpPost("upload-avatar")]
+        public async Task<IActionResult> UploadAvatar(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("File upload error");
 
-        //        if (photo == null || photo.Length == 0)
-        //        {
-        //            _logger.LogWarning("Image file missing");
-        //            return BadRequest(new { status = "error", message = "No file uploaded" });
-        //        }
+            var token = HttpContext.Request.Cookies["tasty-cookies"];
 
-        //        var success = await _userService.UploadProfilePhoto(userId, photo);
-        //        if (!success)
-        //        {
-        //            return BadRequest(new { status = "error", message = "Photo upload failed" });
-        //        }
+            if (string.IsNullOrEmpty(token))
+            {
+                return Unauthorized(new { status = "error", message = "Token is missing in cookies" });
+            }
 
-        //        return Ok(new { status = "success", message = "Profile photo uploaded successfully" });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError($"Error uploading photo: {ex.Message}");
-        //        return StatusCode(500, new { status = "error", message = "Internal server error" });
-        //    }
-        //}
+            var claims = _jwtProvider.GetClaimsFromToken(token);
+            var userId = int.Parse(User.FindFirst("userId")?.Value);
 
+            var validationResultId = await _userIdValidator.ValidateAsync(userId);
+            if (!validationResultId.IsValid)
+            {
+                return BadRequest(new { status = "error", message = validationResultId.Errors.Select(e => e.ErrorMessage).ToArray() });
+            }
 
+            try
+            {
+                using var stream = file.OpenReadStream();
+                var imageUrl = await _cloudinaryService.UploadImageAsync(stream, file.FileName, userId.ToString());
+                return Ok(new { AvatarUrl = imageUrl });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { status = "error", message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { status = "error", message = ex.Message });
+            }
+        }
+
+        [HttpGet("avatar")]
+        public IActionResult GetUserAvatar()
+        {
+            var token = HttpContext.Request.Cookies["tasty-cookies"];
+
+            if (string.IsNullOrEmpty(token))
+            {
+                return Unauthorized(new { status = "error", message = "Token is missing in cookies" });
+            }
+
+            var claims = _jwtProvider.GetClaimsFromToken(token);
+            var userId = int.Parse(User.FindFirst("userId")?.Value);
+
+            try
+            {
+                var avatarUrl = _cloudinaryService.GetUserAvatarUrl(userId.ToString());
+                return Ok(new { AvatarUrl = avatarUrl });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { status = "error", message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new {status = "error", message = ex.Message});
+            }
+        }
     }
 }

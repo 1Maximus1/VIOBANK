@@ -43,23 +43,26 @@ builder.Configuration["ExchangeRateApi:ApiKey"] = Environment.GetEnvironmentVari
 builder.Configuration["Twilio:AccountSid"] = Environment.GetEnvironmentVariable("TwilioAccountSid");
 builder.Configuration["Twilio:AuthToken"] = Environment.GetEnvironmentVariable("TwilioAuthToken");
 builder.Configuration["Encryption:SecretKey"] = Environment.GetEnvironmentVariable("EncryptionSecretKey");
+builder.Configuration["CloudinarySettings:CloudName"] = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME");
+builder.Configuration["CloudinarySettings:ApiKey"] = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY");
+builder.Configuration["CloudinarySettings:ApiSecret"] = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET");
 
 var connectionString = builder.Configuration.GetConnectionString("VIOBANKDbContext");
 builder.Services.AddDbContext<VIOBANKDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 
-// Connect API currency exchange
+//// Connect API currency exchange
 var exchangeRateApiUrl = builder.Configuration["ExchangeRateApi:BaseUrl"];
 var exchangeRateApiKey = builder.Configuration["ExchangeRateApi:ApiKey"];
 
-//// Connect Twilio
+////// Connect Twilio
 var twilioAccountSid = builder.Configuration["Twilio:AccountSid"];
 var twilioAuthToken = builder.Configuration["Twilio:AuthToken"];
 var twilioPhoneNumber = builder.Configuration["Twilio:PhoneNumber"];
 
 //// Connect encryption
-//var encryptionSecretKey = builder.Configuration["Encryption:SecretKey"];
+var encryptionSecretKey = builder.Configuration["Encryption:SecretKey"];
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
 
@@ -133,6 +136,7 @@ builder.Services.AddScoped<AesEncryptionService>();
 builder.Services.AddScoped<IBlacklistedTokenRepository, BlacklistedTokenRepository>();
 builder.Services.AddScoped<JwtBlacklistService>();
 
+builder.Services.AddSingleton<CloudinaryService>();
 
 
 //var redisConnection = builder.Configuration.GetConnectionString("Redis");
@@ -146,6 +150,8 @@ builder.Services.AddScoped<JwtBlacklistService>();
 //var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
 //builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
 //builder.Services.AddSingleton<JwtBlacklistServiceRedis>();
+
+
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
