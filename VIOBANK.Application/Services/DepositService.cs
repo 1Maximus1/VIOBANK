@@ -12,8 +12,9 @@ namespace VIOBANK.Application.Services
         private readonly AccountService _accountService;
         private readonly IDepositTransactionStore _depositTransactionStore;
         private readonly WithdrawnDepositService _withdrawnDepositService;
+        private readonly CurrencyExchangeService _currencyExchangeService;
 
-        public DepositService(ILogger<DepositService> logger, IDepositStore depositStore, CardService cardService, AccountService accountService, IDepositTransactionStore depositTransactionStore, WithdrawnDepositService withdrawnDepositService)
+        public DepositService(CurrencyExchangeService currencyExchangeService, ILogger<DepositService> logger, IDepositStore depositStore, CardService cardService, AccountService accountService, IDepositTransactionStore depositTransactionStore, WithdrawnDepositService withdrawnDepositService)
         {
             _logger = logger;
             _depositStore = depositStore;
@@ -21,6 +22,7 @@ namespace VIOBANK.Application.Services
             _accountService = accountService;
             _depositTransactionStore = depositTransactionStore;
             _withdrawnDepositService = withdrawnDepositService;
+            _currencyExchangeService = currencyExchangeService;
         }
 
         public async Task<IReadOnlyList<Deposit>> GetDepositsByUserId(int userId)
@@ -65,7 +67,6 @@ namespace VIOBANK.Application.Services
                 return (false, "Deposit not found.", 0);
             }
 
-            // Проверка на оставшиеся месяцы до конца депозита
             var maturityDate = deposit.CreatedAt.AddMonths(deposit.DurationMonths);
             var remainingMonths = ((maturityDate.Year - DateTime.UtcNow.Year) * 12) + (maturityDate.Month - DateTime.UtcNow.Month);
 
@@ -74,18 +75,16 @@ namespace VIOBANK.Application.Services
                 return (false, "Top-up not allowed less than 3 months before maturity.", 0);
             }
 
-            // Проверка лимита пополнения (1000 € в месяц)
-            decimal monthlyTopUpLimit = deposit.InitialAmount; // Используем первоначальную сумму депозита
+            decimal monthlyTopUpLimit = deposit.InitialAmount; 
 
             var startOfMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1, 0, 0, 0, DateTimeKind.Utc);
             var totalToppedUpThisMonth = await _depositTransactionStore.GetTotalTopUpForMonth(depositId, startOfMonth);
 
             if (totalToppedUpThisMonth + amount > monthlyTopUpLimit)
             {
-                return (false, $"Top-up exceeds monthly limit of {monthlyTopUpLimit} €.", 0);
+                return (false, $"Top-up exceeds monthly limit of {monthlyTopUpLimit} {deposit.Currency}.", 0);
             }
 
-            // **Добавляем запись о пополнении в таблицу `DepositTransactions`**
             var transaction = new DepositTransaction
             {
                 DepositId = depositId,
@@ -95,14 +94,11 @@ namespace VIOBANK.Application.Services
 
             await _depositTransactionStore.Add(transaction);
 
-            // Обновляем баланс депозита
             deposit.Amount += amount;
             await _depositStore.Update(deposit);
 
             return (true, "Deposit topped up successfully.", deposit.Amount);
         }
-
-
 
         public async Task<(bool Success, string Message, decimal AmountTransferred)> PayoutDeposit(int depositId)
         {
@@ -126,41 +122,42 @@ namespace VIOBANK.Application.Services
             return (true, "Deposit payout completed", totalAmount);
         }
 
-        public async Task<(bool Success, string Message, decimal AmountPaid)> WithdrawDeposit(int depositId, int userId)
+        public async Task<(bool Success, string Message, decimal AmountPaid, string Currency)> WithdrawDeposit(int depositId, int userId)
         {
             var deposit = await _depositStore.GetById(depositId);
             if (deposit == null)
             {
-                return (false, "Deposit not found.", 0);
+                return (false, "Deposit not found.", 0, string.Empty);
             }
             if (deposit.Card.Account.UserId != userId)
             {
-                return (false, "You are not allowed to withdraw this deposit.", 0);
+                return (false, "You are not allowed to withdraw this deposit.", 0, string.Empty);
             }
 
             var account = await _accountService.GetAccountById(deposit.Card.AccountId);
             if (account == null)
             {
-                return (false, "Linked account not found.", 0);
+                return (false, "Linked account not found.", 0, string.Empty);
             }
 
-            // Перевіряємо, чи термін закінчився
             var maturityDate = deposit.CreatedAt.AddMonths(deposit.DurationMonths);
             if (DateTime.UtcNow < maturityDate)
             {
-                return (false, "Deposit maturity period not reached.", 0);
+                return (false, "Deposit maturity period not reached.", 0, string.Empty);
             }
 
-            // Обчислення загальної суми (депозит + відсотки)
             decimal interestEarned = (deposit.Amount * deposit.InterestRate / 100 * deposit.DurationMonths);
             decimal totalAmount = deposit.Amount + interestEarned;
 
+            if (!deposit.Card.Account.Currency.Equals(deposit.Currency, StringComparison.OrdinalIgnoreCase))
+            {
+                var exchangeRate = await _currencyExchangeService.GetExchangeRateAsync(deposit.Currency, deposit.Card.Account.Currency);
+                totalAmount = totalAmount * exchangeRate;
+            }
 
-            // Додаємо кошти на картку
             deposit.Card.Balance += totalAmount;
             await _cardService.UpdateCard(deposit.Card);
 
-            // Создаем запись о снятом депозите
             var withdrawnDeposit = new WithdrawnDeposit
             {
                 UserId = userId,
@@ -175,7 +172,7 @@ namespace VIOBANK.Application.Services
 
             await _depositStore.Delete(deposit.DepositId);
 
-            return (true, "Deposit withdrawn successfully.", totalAmount);
+            return (true, "Deposit withdrawn successfully.", totalAmount, deposit.Card.Account.Currency);
         }
     }
 }

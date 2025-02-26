@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VIOBANK.API.Contracts.Card;
 using VIOBANK.Application.Services;
+using VIOBANK.Domain.Enums;
 using VIOBANK.Domain.Models;
 using VIOBANK.Infrastructure;
 
@@ -33,6 +34,7 @@ namespace VIOBANK.Controllers
         }
 
         [HttpGet]
+        [RequirePermissions(PermissionEnum.Read)]
         public async Task<IActionResult> GetAllCards()
         {
             var token = HttpContext.Request.Cookies["tasty-cookies"];
@@ -70,6 +72,7 @@ namespace VIOBANK.Controllers
         }
 
         [HttpPost("add")]
+        [RequirePermissions(PermissionEnum.Create)]
         public async Task<IActionResult> AddCard([FromBody] CardDTO cardDTO)
         {
             var currencies = new List<string> { "EUR", "USD", "UAH" };

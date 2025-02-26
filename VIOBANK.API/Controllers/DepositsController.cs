@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using VIOBANK.API.Contracts.Deposit;
 using VIOBANK.API.Validation;
 using VIOBANK.Application.Services;
+using VIOBANK.Domain.Enums;
 using VIOBANK.Domain.Models;
 using VIOBANK.Infrastructure;
 
@@ -35,6 +36,7 @@ namespace VIOBANK.Controllers
         }
 
         [HttpPost("open")]
+        [RequirePermissions(PermissionEnum.Create)]
         public async Task<IActionResult> OpenDeposit([FromBody] DepositRequestDTO depositRequestDTO)
         {
             if (depositRequestDTO == null)
@@ -73,7 +75,7 @@ namespace VIOBANK.Controllers
                 }
                 if (card.Account.UserId != userId)
                 {
-                    return Forbid("You are not allowed to send money from this card.");
+                    return BadRequest(new { status = "error", message = "You are not allowed to send money from this card." });
                 }
 
 
@@ -116,6 +118,7 @@ namespace VIOBANK.Controllers
         }
 
         [HttpGet]
+        [RequirePermissions(PermissionEnum.Read)]
         public async Task<IActionResult> GetDeposits()
         {
             var token = HttpContext.Request.Cookies["tasty-cookies"];
@@ -152,6 +155,7 @@ namespace VIOBANK.Controllers
         }
 
         [HttpPost("topup")]
+        [RequirePermissions(PermissionEnum.Update)]
         public async Task<IActionResult> TopUpDeposit([FromBody] DepositTopUpDTO depositTopUpDTO)
         {
             var token = HttpContext.Request.Cookies["tasty-cookies"];
@@ -220,20 +224,20 @@ namespace VIOBANK.Controllers
 
             
             var result = await _depositService.TopUpDeposit(depositTopUpDTO.DepositId, amountToDeduct);
-
-            card.Balance -= amountToDeduct;
-            await _cardService.UpdateCard(card);
             
-
             if (!result.Success)
             {
-                return BadRequest(new { status = "error", message = "Deposit top-up failed." });
+                return BadRequest(new { status = "error", message = result.Message });
             }
+
+            card.Balance -= depositTopUpDTO.Amount;
+            await _cardService.UpdateCard(card);
 
             return Ok(new { status = "success", message = "Deposit topped up successfully." });
         }
 
         [HttpPost("withdraw")]
+        [RequirePermissions(PermissionEnum.Delete)]
         public async Task<IActionResult> WithdrawDeposit([FromBody] WithdrawDepositDTO withdrawRequest)
         {
             var token = HttpContext.Request.Cookies["tasty-cookies"];
@@ -254,13 +258,12 @@ namespace VIOBANK.Controllers
 
             var result = await _depositService.WithdrawDeposit(withdrawRequest.DepositId, userId);
 
-
             if (!result.Success)
             {
                 return BadRequest(new { status = "error", message = result.Message });
             }
 
-            return Ok(new { status = "success", message = "Deposit successfully withdrawn.", amountPaid = result.AmountPaid });
+            return Ok(new { status = "success", message = "Deposit successfully withdrawn.", amountPaid = result.AmountPaid + " " + result.Currency});
         }
     }
 }

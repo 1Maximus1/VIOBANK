@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using VIOBANK.PostgresPersistence;
@@ -11,9 +12,11 @@ using VIOBANK.PostgresPersistence;
 namespace VIOBANK.PostgresPersistence.Migrations
 {
     [DbContext(typeof(VIOBANKDbContext))]
-    partial class VIOBANKDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250221155544_AddAuthorization2")]
+    partial class AddAuthorization2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -285,26 +288,6 @@ namespace VIOBANK.PostgresPersistence.Migrations
                         {
                             Id = 4,
                             Name = "Delete"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Name = "ManageUsers"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Name = "ManageCards"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Name = "ManageDeposits"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Name = "ManageTransactions"
                         });
                 });
 
@@ -566,43 +549,8 @@ namespace VIOBANK.PostgresPersistence.Migrations
                         },
                         new
                         {
-                            RoleId = 1,
-                            PermissionId = 5
-                        },
-                        new
-                        {
-                            RoleId = 1,
-                            PermissionId = 6
-                        },
-                        new
-                        {
-                            RoleId = 1,
-                            PermissionId = 7
-                        },
-                        new
-                        {
-                            RoleId = 1,
-                            PermissionId = 8
-                        },
-                        new
-                        {
-                            RoleId = 2,
-                            PermissionId = 2
-                        },
-                        new
-                        {
                             RoleId = 2,
                             PermissionId = 1
-                        },
-                        new
-                        {
-                            RoleId = 2,
-                            PermissionId = 3
-                        },
-                        new
-                        {
-                            RoleId = 2,
-                            PermissionId = 4
                         });
                 });
 

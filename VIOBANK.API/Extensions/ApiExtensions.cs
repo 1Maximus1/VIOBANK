@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using VIOBANK.Application.Services;
+using VIOBANK.Domain.Enums;
+using VIOBANK.Infrastructure;
 
 namespace VIOBANK.API.Extensions
 {
@@ -40,9 +44,27 @@ namespace VIOBANK.API.Extensions
                     }
                 };
             });
-
-            services.AddAuthorization();
+            services.AddScoped<PermissionService>();
+            services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
+            services.AddAuthorization(options =>
+            {
+                foreach (PermissionEnum permission in Enum.GetValues(typeof(PermissionEnum)))
+                {
+                    options.AddPolicy($"Permissions:{permission}", policy =>
+                        policy.Requirements.Add(new PermissionRequirement(new[] { permission })));
+                }
+            });
         }
+
+        public static IEndpointConventionBuilder RequirePermissions<TBuilder>(
+            this TBuilder builder, params PermissionEnum[] permissions)
+                where TBuilder : IEndpointConventionBuilder
+        {
+            return builder.RequireAuthorization(policy => policy.AddRequirements(new PermissionRequirement(permissions)));
+        }
+            
     }
+
+    
 
 }

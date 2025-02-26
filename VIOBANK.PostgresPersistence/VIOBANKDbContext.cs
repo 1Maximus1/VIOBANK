@@ -1,6 +1,8 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using VIOBANK.Domain.Models;
+using VIOBANK.PostgresPersistence.AuthOptions;
 using VIOBANK.PostgresPersistence.Configurations;
 using VIOBANK.PostgresPersistence.Entities;
 
@@ -8,12 +10,17 @@ namespace VIOBANK.PostgresPersistence
 {
     public class VIOBANKDbContext: DbContext
     {
-        public VIOBANKDbContext(DbContextOptions<VIOBANKDbContext> options) : base(options)
+        private readonly IOptions<AuthorizationOptions> _authOptions;
+        public VIOBANKDbContext(DbContextOptions<VIOBANKDbContext> options, IOptions<AuthorizationOptions> authOptions) : base(options)
         {
-
+            _authOptions = authOptions;
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<Permission> Permissions { get; set; }
+        public DbSet<RolePermissionEnity> RolePermissions { get; set; }
+        public DbSet<UserRoleEntity> UserRoles { get; set; }
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Card> Cards { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
@@ -37,6 +44,11 @@ namespace VIOBANK.PostgresPersistence
             modelBuilder.ApplyConfiguration(new DepositTransactionConfiguration());
             modelBuilder.ApplyConfiguration(new WithdrawnDepositConfiguration());
             modelBuilder.ApplyConfiguration(new BlacklistedTokenConfiguration());
+            
+            modelBuilder.ApplyConfiguration(new RolePermissionConfiguration(_authOptions.Value));
+            modelBuilder.ApplyConfiguration(new RoleConfiguration());
+            modelBuilder.ApplyConfiguration(new PermissionConfiguration());
+            modelBuilder.ApplyConfiguration(new UserRoleConfiguration());
 
             base.OnModelCreating(modelBuilder);
         }

@@ -8,10 +8,8 @@ namespace VIOBANK.PostgresPersistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Contact> builder)
         {
-            // Визначення Primary Key
             builder.HasKey(c => c.ContactId);
 
-            // Встановлення обов'язкових параметрів
             builder.Property(c => c.ContactName)
                 .HasMaxLength(100)
                 .IsRequired();
@@ -26,7 +24,6 @@ namespace VIOBANK.PostgresPersistence.Configurations
 
             builder.HasIndex(u => u.ContactCard).IsUnique();
 
-            // Зв’язок Many-to-One (Користувач → Контакти)
             builder.HasOne(c => c.User)
                 .WithMany(u => u.Contacts)
                 .HasForeignKey(c => c.UserId)

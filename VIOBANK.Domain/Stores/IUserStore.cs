@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using VIOBANK.Domain.Enums;
 using VIOBANK.Domain.Filters;
 using VIOBANK.Domain.Models;
 
@@ -10,12 +6,17 @@ namespace VIOBANK.Domain.Stores
 {
     public interface IUserStore
     {
-        Task<IReadOnlyList<User>> GetByFilter(UserFilter filter); // Отримання користувачів за фільтром
-        Task<User> GetById(int id); // Отримання користувача за ID
-        Task<User> GetByEmail(string email); // Отримання користувача за email
+        Task<IReadOnlyList<User>> GetByFilter(UserFilter filter);
+        Task<User> GetById(int id); 
+        Task<User> GetByEmail(string email);
         Task<User> GetByCardNumber(string cardNumber);
-        Task Add(User user); // Додавання нового користувача
-        Task Update(User user); // Оновлення існуючого користувача
-        Task Delete(int id); // Видалення користувача
+        Task Add(User user);
+        Task Update(User user);
+        Task Delete(int id);
+        Task<HashSet<PermissionEnum>> GetUserPermissions(int userId);
+        Task<IReadOnlyList<User>> GetUsers();
+        Task<List<PermissionEnum>> GetUserPermissionsList(int userId);
+        Task<bool> ApplyRoleToUser(int userId, List<Role> roles);
+        Task<List<Role>> ConvertToListRole(List<string> role);
     }
 }

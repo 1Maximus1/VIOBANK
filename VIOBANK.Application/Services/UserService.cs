@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using System.Security.Authentication;
+using VIOBANK.Domain.Enums;
 using VIOBANK.Domain.Filters;
 using VIOBANK.Domain.Models;
 using VIOBANK.Domain.Stores;
@@ -163,6 +165,43 @@ namespace VIOBANK.Application.Services
             await _cardService.UpdateCardsRange(cards.ToList());
 
             return (true, string.Empty);
+        }
+
+        public async Task<IReadOnlyList<PermissionEnum>> GetPermissionsList(int userId)
+        {
+            return await _userStore.GetUserPermissionsList(userId);
+        }
+
+        public async Task<IReadOnlyList<User>> GetAllUsers()
+        {
+            return await _userStore.GetUsers();
+        }
+
+        public async Task<(bool Success, string Message, int UserId)> CreateUser(User user, string passwordAccount, string passwordCard, List<string> role, string currency)
+        {
+            var validCurrencies = new List<string> { "USD", "EUR", "UAH" };
+            if (!validCurrencies.Contains(currency.ToUpper()))
+            {
+                return (false, "Invalid currency type", 0);
+            }
+
+            var hashedPassword = _passwordHasher.Generate(passwordAccount);
+            user.PasswordHash = hashedPassword;
+
+            await _userStore.Add(user);
+
+            var convertedRoles = await _userStore.ConvertToListRole(role);
+
+            await _userStore.ApplyRoleToUser(user.UserId, convertedRoles);
+
+            var account = await _accountService.GenerateAccount(user, 0, currency);
+            await _accountService.Add(account);
+
+            var expiryDate = DateTime.UtcNow.AddYears(5);
+
+            var passwordCardEncr = _aesEncryptionService.Encrypt(passwordCard);
+            var card = await _cardService.CreateCard(account, passwordCardEncr, user.Surname + " " + user.Name, expiryDate);
+            return (true, "User created successfully", user.UserId);
         }
     }
 }

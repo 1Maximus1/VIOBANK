@@ -35,10 +35,13 @@ namespace VIOBANK.Application.Services
                 throw new ArgumentException("User ID cannot be null or empty.");
             }
 
+            await _cloudinary.DeleteResourcesAsync($"avatars/{userId}");
+
             var uploadParams = new ImageUploadParams
             {
                 File = new FileDescription(fileName, fileStream),
                 PublicId = $"avatars/{userId}",
+                Invalidate=true,
                 Overwrite = true,
                 Transformation = new Transformation().Width(300).Height(300).Crop("fill").Gravity("face")
             };
@@ -59,7 +62,14 @@ namespace VIOBANK.Application.Services
             {
                 throw new ArgumentException("User ID cannot be null or empty.");
             }
-            return $"https://res.cloudinary.com/{_cloudinary.Api.Account.Cloud}/image/upload/avatars/{userId}.jpg";
+
+            var getResourceParams = new GetResourceParams($"avatars/{userId}")
+            {
+                QualityAnalysis = true
+            };
+            var getResourceResult = _cloudinary.GetResource(getResourceParams);
+
+            return getResourceResult.Url;
         }
     }
 }

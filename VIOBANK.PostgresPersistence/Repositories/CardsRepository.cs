@@ -32,7 +32,7 @@ namespace VIOBANK.PostgresPersistence.Repositories
 
         public async Task<IReadOnlyList<Card>> GetAll()
         {
-            return await _context.Cards.AsNoTracking().ToListAsync();
+            return await _context.Cards.AsNoTracking().Include(c => c.Account).ThenInclude(c => c.User).ToListAsync();
         }
 
         public async Task<Card> GetByAccountId(int accountId)

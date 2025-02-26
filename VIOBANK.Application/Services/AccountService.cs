@@ -88,14 +88,13 @@ namespace VIOBANK.Application.Services
             string accountNumber = new Random().Next(100000000, 999999999).ToString() +
                                    new Random().Next(100000000, 999999999).ToString();
 
-            string controlDigits = "00"; // Контрольные цифры (их можно рассчитывать)
+            string controlDigits = "00"; 
 
             return $"{countryCode}{controlDigits}{bankCode}{accountNumber}";
         }
 
         public async Task Logout(string email)
         {
-            // Очистка токенов или сессий пользователя
             _logger.LogInformation($"User {email} logged out.");
         }
 

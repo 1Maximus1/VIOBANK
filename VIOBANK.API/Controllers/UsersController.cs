@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Npgsql.BackendMessages;
 using VIOBANK.API.Contracts.User;
 using VIOBANK.Application.Services;
+using VIOBANK.Domain.Enums;
 using VIOBANK.Domain.Models;
 using VIOBANK.Infrastructure;
 
@@ -33,6 +34,7 @@ namespace VIOBANK.Controllers
         }
 
         [HttpGet]
+        [RequirePermissions(PermissionEnum.Read)]
         public async Task<IActionResult> GetProfile()
         {
             try
@@ -84,6 +86,7 @@ namespace VIOBANK.Controllers
 
         [HttpPut]
         [Route("update")]
+        [RequirePermissions(PermissionEnum.Update)]
         public async Task<IActionResult> UpdateProfile([FromBody] UserProfileDTO userDTO)
         {
             try
@@ -144,6 +147,7 @@ namespace VIOBANK.Controllers
         }
 
         [HttpPost("upload-avatar")]
+        [RequirePermissions(PermissionEnum.Update)]
         public async Task<IActionResult> UploadAvatar(IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -182,6 +186,7 @@ namespace VIOBANK.Controllers
         }
 
         [HttpGet("avatar")]
+        [RequirePermissions(PermissionEnum.Read)]
         public IActionResult GetUserAvatar()
         {
             var token = HttpContext.Request.Cookies["tasty-cookies"];

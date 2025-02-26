@@ -10,6 +10,7 @@ using VIOBANK.API.Contracts.MobileTopup;
 using FluentValidation;
 using VIOBANK.API.Validation;
 using Twilio.Exceptions;
+using VIOBANK.Domain.Enums;
 
 namespace VIOBANK.Controllers
 {
@@ -40,6 +41,7 @@ namespace VIOBANK.Controllers
         }
 
         [HttpGet("mobile-topup")]
+        [RequirePermissions(PermissionEnum.Read)]
         public async Task<IActionResult> GetTopup()
         {
             var token = HttpContext.Request.Cookies["tasty-cookies"];
@@ -73,6 +75,7 @@ namespace VIOBANK.Controllers
         }
 
         [HttpPost("mobile-topup")]
+        [RequirePermissions(PermissionEnum.Create)]
         public async Task<IActionResult> MobileTopup([FromBody] MobileTopupRequestDTO request)
         {
             if (request == null)

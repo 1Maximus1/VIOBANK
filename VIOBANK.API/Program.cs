@@ -22,6 +22,9 @@ using VIOBANK.API.Validation.Auth;
 //using FluentValidation.AspNetCore;
 using VIOBANK.API.Contracts.Account;
 using VIOBANK.API.Validation.Account;
+using VIOBANK.PostgresPersistence.AuthOptions;
+using Newtonsoft.Json;
+using Microsoft.AspNetCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,6 +66,10 @@ var twilioPhoneNumber = builder.Configuration["Twilio:PhoneNumber"];
 
 //// Connect encryption
 var encryptionSecretKey = builder.Configuration["Encryption:SecretKey"];
+
+builder.Services.Configure<AuthorizationOptions>(builder.Configuration.GetSection(nameof(AuthorizationOptions)));
+var options = builder.Configuration.GetSection(nameof(AuthorizationOptions)).Get<AuthorizationOptions>();
+Console.WriteLine(JsonConvert.SerializeObject(options));
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
 
@@ -180,12 +187,13 @@ using (var scope = app.Services.CreateScope())
 
 app.UseMiddleware<JwtBlacklistMiddleware>();
 
-
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "VIOBANK API V1");
+    c.RoutePrefix = string.Empty;
+});
+
 
 app.UseCookiePolicy(new CookiePolicyOptions
 {
@@ -201,5 +209,6 @@ app.MapControllers();
 app.UseCors(MyAllowSpecificOrigins);
 app.UseAuthentication();
 app.UseAuthorization();
+
 
 app.Run();

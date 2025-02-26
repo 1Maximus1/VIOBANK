@@ -22,7 +22,6 @@ namespace VIOBANK.Application.Services
             _currencyExchangeService = 
             _currencyExchangeService = currencyExchangeService;
         }
-
         public async Task<IReadOnlyList<Transaction>> GetTransactionsByAccountId(int accountId)
         {
             _logger.LogInformation($"Receiving transactions for an account {accountId}");

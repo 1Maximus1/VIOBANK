@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using VIOBANK.Domain.Models;
+using VIOBANK.PostgresPersistence.Entities;
 
 namespace VIOBANK.PostgresPersistence.Configurations
 {
@@ -48,8 +49,14 @@ namespace VIOBANK.PostgresPersistence.Configurations
                 .WithOne(s => s.User)
                 .HasForeignKey<Settings>(s => s.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(u => u.Roles)
+                .WithMany(s => s.Users)
+                .UsingEntity<UserRoleEntity>(
+                    l => l.HasOne<Role>().WithMany().HasForeignKey(r => r.RoleId),
+                    r => r.HasOne<User>().WithMany().HasForeignKey(u => u.UserId)
+                );
+
         }
     }
-
-
 }

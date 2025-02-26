@@ -7,6 +7,8 @@ using VIOBANK.API.Contracts.Account;
 using FluentValidation;
 using VIOBANK.API.Contracts.Card;
 using VIOBANK.PostgresPersistence.Repositories;
+using VIOBANK.Domain.Models;
+using VIOBANK.Domain.Enums;
 namespace VIOBANK.Controllers
 {
     [Authorize]
@@ -47,6 +49,7 @@ namespace VIOBANK.Controllers
         }
 
         [HttpPut("change-card-password")]
+        [RequirePermissions(PermissionEnum.Update)]
         public async Task<IActionResult> ChangeCardPassword([FromBody] ChangeCardPasswordDTO request)
         {
             if (request == null)
@@ -82,6 +85,7 @@ namespace VIOBANK.Controllers
         }
 
         [HttpPut("change-account-password")]
+        [RequirePermissions(PermissionEnum.Update)]
         public async Task<IActionResult> ChangeAccountPassword([FromBody] ChangeAccountPassword request)
         {
             if (request == null)
@@ -117,6 +121,7 @@ namespace VIOBANK.Controllers
         }
 
         [HttpDelete("delete-account")]
+        [RequirePermissions(PermissionEnum.Delete)]
         public async Task<IActionResult> DeleteAccount()
         {
             var token = HttpContext.Request.Cookies["tasty-cookies"];
@@ -148,6 +153,7 @@ namespace VIOBANK.Controllers
         }
 
         [HttpPost("logout")]
+        [RequirePermissions(PermissionEnum.Read)]
         public async Task<IActionResult> Logout()
         {
             var token = HttpContext.Request.Cookies["tasty-cookies"];

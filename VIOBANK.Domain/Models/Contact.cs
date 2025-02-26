@@ -2,8 +2,8 @@
 {
     public class Contact
     {
-        public int ContactId { get; set; } // Primary Key
-        public int UserId { get; set; } // Foreign Key
+        public int ContactId { get; set; }
+        public int UserId { get; set; }
         public string ContactName { get; set; }
         public string ContactPhone { get; set; }
         public string ContactCard { get; set; }

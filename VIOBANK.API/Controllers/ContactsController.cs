@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VIOBANK.API.Contracts.Contact;
 using VIOBANK.Application.Services;
+using VIOBANK.Domain.Enums;
 using VIOBANK.Domain.Models;
 using VIOBANK.Infrastructure;
 
@@ -29,6 +30,7 @@ namespace VIOBANK.Controllers
         }
 
         [HttpGet]
+        [RequirePermissions(PermissionEnum.Read)]
         public async Task<IActionResult> GetContacts()
         {
             var token = HttpContext.Request.Cookies["tasty-cookies"];
@@ -59,6 +61,7 @@ namespace VIOBANK.Controllers
         }
 
         [HttpPost("add")]
+        [RequirePermissions(PermissionEnum.Create)]
         public async Task<IActionResult> AddContact([FromBody] ContactRequestDTO request)
         {
             if (request == null || string.IsNullOrEmpty(request.CardNumber))

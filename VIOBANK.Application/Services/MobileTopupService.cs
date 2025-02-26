@@ -19,7 +19,6 @@ namespace VIOBANK.Application.Services
             _logger = logger;
             _mobileTopupStore = mobileTopupStore;
         }
-
         public async Task<IReadOnlyList<MobileTopup>> GetTopupsByUserId(int userId)
         {
             _logger.LogInformation($"Getting a list of top-ups for a user {userId}");

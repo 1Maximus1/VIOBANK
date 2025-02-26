@@ -23,16 +23,15 @@ namespace VIOBANK.PostgresPersistence.Repositories
         {
                 var account = await _context.Accounts
         .Include(a => a.Cards)
-            .ThenInclude(c => c.TransactionsFrom) // Исходящие транзакции
+            .ThenInclude(c => c.TransactionsFrom)
         .Include(a => a.Cards)
-            .ThenInclude(c => c.TransactionsTo)   // Входящие транзакции
+            .ThenInclude(c => c.TransactionsTo)
         .Include(a => a.Cards)
         .ThenInclude(c => c.Deposits)
         .FirstOrDefaultAsync(a => a.AccountId == accountId);
 
             if (account != null)
             {
-                // Удаляем транзакции карт
                 foreach (var card in account.Cards)
                 {
                     _context.Transactions.RemoveRange(card.TransactionsFrom);
@@ -40,10 +39,8 @@ namespace VIOBANK.PostgresPersistence.Repositories
                     _context.Deposits.RemoveRange(card.Deposits);
                 }
 
-                // Удаляем карты
                 _context.Cards.RemoveRange(account.Cards);
 
-                // Удаляем сам аккаунт
                 _context.Accounts.Remove(account);
 
                 await _context.SaveChangesAsync();

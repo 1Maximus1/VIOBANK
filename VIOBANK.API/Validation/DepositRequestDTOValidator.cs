@@ -16,7 +16,7 @@ namespace VIOBANK.API.Validation
             _exchangeService = exchangeService;
 
             RuleFor(x => x.Amount)
-                .MustAsync((dto, amount, cancellationToken) => BeValidAmount(amount, dto.CardNumber, cancellationToken)).WithMessage("Amount must be greater than 1000.");
+                .MustAsync((dto, amount, cancellationToken) => BeValidAmount(amount, dto.CardNumber, cancellationToken)).WithMessage("Amount must be greater than 1000 UAH.");
 
             RuleFor(x => x.Currency)
                 .NotEmpty().WithMessage("Currency is required.")

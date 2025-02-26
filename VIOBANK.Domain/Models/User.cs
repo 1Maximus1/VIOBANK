@@ -18,6 +18,7 @@
         public List<MobileTopup> MobileTopups { get; set; } = new List<MobileTopup>();
         public List<Contact> Contacts { get; set; } = new List<Contact>();
         public List<WithdrawnDeposit> WithdrawnDeposits { get; set; } = new List<WithdrawnDeposit>();
+        public List<Role> Roles { get; set; } = [];
         public Settings Settings { get; set; }
     }
 }

@@ -2,6 +2,8 @@
 using VIOBANK.Domain.Models;
 using VIOBANK.Domain.Stores;
 using Microsoft.EntityFrameworkCore;
+using VIOBANK.Domain.Enums;
+using System.Data;
 
 namespace VIOBANK.PostgresPersistence.Repositories
 {
@@ -16,6 +18,12 @@ namespace VIOBANK.PostgresPersistence.Repositories
 
         public async Task Add(User user)
         {
+            var userRole = await _context.Roles
+                .SingleOrDefaultAsync(r => r.Id == (int)RoleEnum.User)
+                ?? throw new InvalidOperationException("Role 'User' not found.");
+
+            user.Roles = new List<Role> { userRole };
+
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
         }
@@ -87,6 +95,76 @@ namespace VIOBANK.PostgresPersistence.Repositories
         {
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
+        }
+
+
+        public async Task<HashSet<PermissionEnum>> GetUserPermissions(int userId)
+        {
+            var roles = await _context.Users.AsNoTracking()
+                .Include(u => u.Roles)
+                .ThenInclude(r => r.Permissions)
+                .Where(u => u.UserId == userId)
+                .Select(u => u.Roles)
+                .ToArrayAsync();
+
+            return roles
+                .SelectMany(r => r)
+                .SelectMany(r => r.Permissions)
+                .Select(p => (PermissionEnum)p.Id)
+                .ToHashSet();
+        }
+
+        public async Task<IReadOnlyList<User>> GetUsers()
+        {
+            return await _context.Users.AsNoTracking().Include(u => u.Roles).ToListAsync(); 
+        }
+
+        public async Task<List<PermissionEnum>> GetUserPermissionsList(int userId)
+        {
+            var roles = await _context.Users
+                .AsNoTracking()
+                .Include(u => u.Roles)
+                .ThenInclude(r => r.Permissions)
+                .Where(u => u.UserId == userId)
+                .SelectMany(u => u.Roles)
+                .ToListAsync();
+
+            return roles
+                .SelectMany(r => r.Permissions)
+                .Select(p => (PermissionEnum)p.Id)
+                .ToList();
+        }
+
+        public async Task<bool> ApplyRoleToUser(int userId, List<Role> roles)
+        {
+            var user = await _context.Users
+                .Include(u => u.Roles)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            var existingRoleIds = user.Roles.Select(r => r.Id).ToHashSet();
+
+            foreach (var role in roles)
+            {
+                if (!existingRoleIds.Contains(role.Id))
+                {
+                    user.Roles.Add(role);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<List<Role>> ConvertToListRole(List<string> roleNames)
+        {
+            return await _context.Roles.AsNoTracking()
+                .Where(r => roleNames.Contains(r.Name))
+                .ToListAsync();
         }
     }
 }

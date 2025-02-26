@@ -8,6 +8,7 @@ using VIOBANK.API.Contracts.Transaction;
 using VIOBANK.API.Contracts.Transaction.ComplexDTOs;
 using VIOBANK.API.Validation;
 using FluentValidation;
+using VIOBANK.Domain.Enums;
 
 namespace VIOBANK.Controllers
 {
@@ -42,6 +43,7 @@ namespace VIOBANK.Controllers
         }
 
         [HttpGet]
+        [RequirePermissions(PermissionEnum.Read)]
         public async Task<IActionResult> GetTransactions()
         {
             _logger.LogInformation("Fetching transactions");
@@ -118,8 +120,8 @@ namespace VIOBANK.Controllers
             return Ok(response);
         }
 
-        //Only admin
         [HttpGet("{id}")]
+        [RequirePermissions(PermissionEnum.ManageUsers)]
         public async Task<IActionResult> GetTransactionById(int id)
         {
             var transaction = await _transactionService.GetTransactionById(id);
@@ -137,7 +139,7 @@ namespace VIOBANK.Controllers
                 Description = transaction.Description,
                 NumberFrom = transaction.FromCard.CardNumber,
                 NumberTo = transaction.ToCard.CardNumber,
-                CreatedAt = transaction.CreatedAt.ToString("yyyy-MM-dd"),
+                CreatedAt = transaction.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd"),
                 Time = transaction.CreatedAt.ToLocalTime().ToString("hh:mm tt", CultureInfo.InvariantCulture),
                 IsIncome = transaction.ToCard?.Account?.UserId == id
             };
@@ -146,6 +148,7 @@ namespace VIOBANK.Controllers
         }
 
         [HttpPost("send")]
+        [RequirePermissions(PermissionEnum.Create)]
         public async Task<IActionResult> CreateTransaction([FromBody] TransactionRequestDTO request)
         {
             try
